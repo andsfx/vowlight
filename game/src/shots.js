@@ -94,6 +94,7 @@ export function stageVictoryShot(world, beginRun) {
   beginRun(world);
   world.state = 'victory';
   world.score = 12640;
+  world.best = 12640;
   world.bestCombo = 7;
   world.elapsed = 372;
   world.kills = 46;
@@ -123,6 +124,7 @@ export function stageDefeatShot(world, beginRun) {
     world.keeper.flames = 0;
     world.state = 'defeat';
   }
+  world.best = Math.max(world.best, world.score);
   world.elapsed = 179;
   for (let step = 0; step < 20; step++) world.step(1 / 60);
 }

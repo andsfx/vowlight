@@ -6,7 +6,7 @@ import { drawTrackedText, drawPlate, drawKeyCap, roundedRectPath, formatScore, f
 
 /** The pulse every prompt breathes with. */
 function promptPulse(world) {
-  return 0.58 + 0.42 * Math.sin(world.time * 3.1);
+  return 0.72 + 0.28 * Math.sin(world.time * 3.1);
 }
 
 /** A lantern: a hooded flame in a ring of light, the game's mark. */
@@ -250,12 +250,12 @@ export function drawVictoryScreen(ctx, world) {
     colour: PALETTE.flame,
   });
   ctx.globalAlpha = 1;
-  drawTrackedText(ctx, `THE ARENA IS QUIET FOR NOW.  ${TEXT.best} ${formatScore(world.best)}`, centreX, 616, {
-    size: 12,
-    weight: 600,
+  drawTrackedText(ctx, `THE ARENA IS QUIET FOR NOW.  ${TEXT.best} ${formatScore(world.best)}`, centreX, 600, {
+    size: 13,
+    weight: 700,
     tracking: 3,
     align: 'center',
-    colour: 'rgba(125, 140, 150, 0.9)',
+    colour: 'rgba(190, 199, 206, 0.95)',
   });
 }
 

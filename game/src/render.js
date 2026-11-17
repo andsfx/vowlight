@@ -515,9 +515,13 @@ export function drawFrame(ctx, world, viewport) {
   drawAsh(ctx, world.effects, world.state === 'defeat' ? 0.4 : 1);
   if (world.state === 'title' || world.state === 'victory' || world.state === 'defeat') drawAttractLayer(ctx, world);
   drawEnemies(ctx, world);
-  drawKeeperShadow(ctx, world);
-  drawKeeper(ctx, world);
-  drawWard(ctx, world);
+  // The keeper stays hidden on the title so its lantern glow never collides with the tagline;
+  // victory and defeat still show it on purpose (the kept and guttered candle).
+  if (world.state !== 'title') {
+    drawKeeperShadow(ctx, world);
+    drawKeeper(ctx, world);
+    drawWard(ctx, world);
+  }
   drawBolts(ctx, world);
   drawRings(ctx, world.effects);
   drawParticles(ctx, world.effects);
