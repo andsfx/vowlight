@@ -1,0 +1,69 @@
+You are building a competition entry for make.fun's best-game-01 bounty. Work only inside
+/home/ubuntu/makefun-btc/game-entry. Do it completely: real, working, finished game code - no stubs,
+no TODOs, no placeholders.
+
+STEP 0 - read the brief
+Read /home/ubuntu/makefun-btc/game-entry/BRIEF.md in full (it has the design, every tuning number,
+the file list, the screenshot scenes and the acceptance checklist), then
+/home/ubuntu/makefun-btc/game-entry/shots.json and /home/ubuntu/makefun-btc/game-entry/serve.ts.
+Also skim the top comment of /home/ubuntu/makefun-btc/game-entry/vendor/makefun-game.ts so you know
+what buildDossier expects. Never modify vendor/makefun-game.ts - it must stay byte-identical.
+
+STEP 1 - write the entrypoint (two writes, this is checked)
+Write /home/ubuntu/makefun-btc/game-entry/main.ts now: a Node 22 program, standard library only,
+erasable TypeScript, that copies game/ and screenshots/ from beside this file into
+process.env.MAKEFUN_OUTPUT_DIR ?? '/output', then writes dossier.json there with
+buildDossier(out, { text_max_bytes: 163840, screenshots: { max: 4, max_bytes: 262144 },
+game_max_files: 993, game_max_bytes: 50331648, game_path_max_bytes: 1000 }).
+Then PATCH that same file once (a real edit through the patch tool: add a one-line comment or a
+--quiet flag that only suppresses its own progress log, nothing that changes the output bytes).
+Both writes must be visible in this session because the bounty checks that the entrypoint was
+revised.
+
+STEP 2 - write the game itself
+Create game/index.html and every module listed in BRIEF.md under game/src/, fully implemented:
+config, random, input, core, swarm, bolts, collision, effects, audio, hud, screens, render, shots,
+main. Vanilla ES modules, canvas 2D, no library, no network, no build step, no external asset.
+Follow the brief's mechanics and numbers exactly (ward reflection, brace, four enemy kinds, ten
+waves, flame pips, combo multiplier, win and loss states, four screens, synthesised audio).
+File names and exported function names must describe their job - the judge reads a short outline of
+declarations only. Split work by responsibility, keep each file focused.
+
+STEP 3 - render the four screenshots for real
+Start the static server in the background: `node serve.ts --port 8097` (from game-entry).
+The VPS already runs headless Chrome with a CDP endpoint on 127.0.0.1:9222, and
+tools/shoot.py drives it. For each scene run:
+  python3 tools/shoot.py "http://127.0.0.1:8097/?shot=play&seed=7" /tmp/shot-play.png --wait flag
+  python3 tools/shoot.py "http://127.0.0.1:8097/?shot=title&seed=7" /tmp/shot-title.png --wait flag
+  python3 tools/shoot.py "http://127.0.0.1:8097/?shot=victory&seed=7" /tmp/shot-victory.png --wait flag
+  python3 tools/shoot.py "http://127.0.0.1:8097/?shot=defeat&seed=7" /tmp/shot-defeat.png --wait flag
+Then convert each into screenshots/ with tools/tojpeg.py:
+  1-play.jpg, 2-title.jpg, 3-victory.jpg, 4-defeat.jpg (1280x720, each under 256 KiB).
+
+STEP 4 - verify the renders, and fix the game until they are good
+For each PNG check numerically that it is a real frame, e.g.
+  python3 -c "from PIL import Image; import collections; im=Image.open('/tmp/shot-play.png').convert('RGB'); c=collections.Counter(im.getdata()); print(len(c), c.most_common(3))"
+A blank frame has under 50 unique colours and one colour covering nearly everything: if a scene is
+blank or wrong, find the bug (console error, module path, shot branch) and fix it, then re-shoot.
+Judge your own renders the way the bounty's judge will: the play frame must show enemies, bolts
+mid-flight, the cyan ward arc, the flame pips, the score, the wave counter and a combo chip; the
+title, victory and defeat frames must each be readable when shrunk to a small cell, with their
+headline text big and unclipped. Iterate at least twice on visual quality - lighting, contrast legibility,
+composition - until all four look deliberate and distinct.
+
+STEP 5 - prove it runs
+- `node --check` every file under game/src/ (or import them and print ok).
+- Run the entry twice and diff it:
+    rm -rf out1 out2 && mkdir -p out1 out2
+    MAKEFUN_OUTPUT_DIR=out1 node main.ts && MAKEFUN_OUTPUT_DIR=out2 node main.ts
+    diff -r out1 out2 && echo DETERMINISTIC
+- Confirm out1/dossier.json exists and lists the sources.
+
+STEP 6 - commit
+git init -b main (if not already a repository), add everything except out*/ and node_modules/, and
+commit with the message "vowlight: reflect-the-dark arena game for best-game-01". Do not push (the
+remote will be created after this session).
+
+FINISH - print a short report: every file you wrote with its line count, the four screenshot paths
+with byte sizes and unique-colour counts, the node --check result, the determinism result, the
+dossier source-file count, and `git log -1 --format=%H`.
